@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WiFi Networks</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            background-color: #f4f4f4;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="container mt-5">
+    <h1 class="text-center mb-4">Nearby WiFi Networks</h1>
+    <ul class="list-group mb-4">
+        {% for network in networks %}
+            <li class="list-group-item list-clickable">{{ network }}</li>
+        {% endfor %}
+    </ul>
+
+    <h2 class="text-center mb-4">Connect</h2>
+    <form action="/connect" method="post" class="mb-4">
+        <div class="form-group">
+            <label for="ssid">SSID:</label>
+            <input type="text" id="ssid" name="ssid" required class="form-control">
+        </div>
+        <div class="form-group">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required class="form-control">
+        </div>
+        <input type="submit" value="Connect" class="btn btn-primary btn-block">
+    </form>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <script>
+        $(document).ready(function() {
+            $(".list-clickable").on('click', function() {
+                const ssid = $(this).text().trim();
+                $("#ssid").val(ssid);
+            });
+        });
+    </script>
+</body>
+</html>
