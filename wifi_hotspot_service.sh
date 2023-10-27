@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SERVICE_NAME=wifi_connector
-SCRIPT_PATH="/path/to/your/script.py"
+SCRIPT_PATH="/home/linaro/Documents/tinkerboard-hotspot/wifi_hotspot.py"
 
 echo "[Unit]
 Description=WiFi Connector Service
