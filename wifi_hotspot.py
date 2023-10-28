@@ -5,6 +5,9 @@ import threading
 from flask import Flask, render_template, request, redirect, flash
 from werkzeug.serving import make_server
 
+MAX_RETRIES = 3
+RETRY_WAIT_TIME = 10  # saniye
+
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 
@@ -41,10 +44,27 @@ def control_network_manager(action="start"):
     if action == "start":
         time.sleep(5)  # Give network time to initialize
 
+def ensure_hostapd_active():
+    retries = 0
+    while retries < MAX_RETRIES:
+        if not is_hotspot_active():
+            print("hostapd is not active. Retrying...")
+            execute_command(["sudo", "systemctl", "stop", "hostapd"])
+            time.sleep(RETRY_WAIT_TIME)
+            execute_command(["sudo", "systemctl", "start", "hostapd"])
+            retries += 1
+        else:
+            print("hostapd is active.")
+            return True
+    print(f"Failed to start hostapd after {MAX_RETRIES} retries.")
+    return False
+
+
 def initiate_hotspot():
     set_ip_address("add")
     control_network_manager("stop")
     execute_command(["sudo", "systemctl", "start", "hostapd"])
+    ensure_hostapd_active()
 
 def terminate_hotspot():
     execute_command(["sudo", "systemctl", "stop", "hostapd"])
