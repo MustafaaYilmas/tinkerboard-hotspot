@@ -116,7 +116,7 @@ def check_and_maintain_connection():
             update_recent_networks()
 
         elif is_connected() and is_hotspot_active():
-            terminate_hotspot()x
+            terminate_hotspot()
         time.sleep(300)  # Checking every 5 minutes
 
 
