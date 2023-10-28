@@ -7,6 +7,7 @@ from werkzeug.serving import make_server
 
 MAX_RETRIES = 3
 RETRY_WAIT_TIME = 10  # saniye
+server_thread_started = False
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
@@ -101,17 +102,24 @@ def connect():
         return redirect('/')
 
 def check_and_maintain_connection():
+    global server_thread_started
+
     while True:
         if not is_connected() and not is_hotspot_active():
             initiate_hotspot()
-            flask_server_thread = threading.Thread(target=app.run, kwargs={"host": "0.0.0.0", "port": 5010})
-            flask_server_thread.start()
-        elif is_connected():
-            terminate_hotspot()
-            if server:
-                server.shutdown()
+
+            if not server_thread_started:
+                flask_server_thread = threading.Thread(target=app.run, kwargs={"host": "0.0.0.0", "port": 5010})
+                flask_server_thread.start()
+                server_thread_started = True
+
             update_recent_networks()
-        time.sleep(30)
+
+        elif is_connected() and is_hotspot_active():
+            terminate_hotspot()x
+        time.sleep(300)  # Checking every 5 minutes
+
+
 
 if __name__ == '__main__':
     update_recent_networks()
