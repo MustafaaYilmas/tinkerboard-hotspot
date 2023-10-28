@@ -70,3 +70,10 @@ This script will:
 5. Open a web browser and navigate to the Flask web server (default: `http://10.0.0.1:5010/`).
 6. Select a WiFi network, input the password, and click "Connect".
 
+
+## Last Notes
+Resource usage is very low, especially during sleep time when it consumes almost no resources. 
+
+When it needs to run many different services during the process of connecting to the internet, it can create a momentary load of 10-15% on a core. But this is temporary and caused by system services. Once the connection is established, this load dissipates immediately. 
+
+A more optimized solution can be developed and this code should definitely be customized according to the needs, and if possible, it should not be used directly in products in the field without testing. You can use the code, but I wanted to say as standard that I accept no responsibility :) 
