@@ -61,6 +61,10 @@ def terminate_hotspot():
     remove_static_ip()
     enable_network()
 
+def flask_thread():
+    run_flask_app()
+
+
 
 
 def extract_ssid_and_signal(line):
@@ -111,12 +115,16 @@ def check_and_maintain_connection():
     while True:
         if not is_connected() and not is_hotspot_active():
             initiate_hotspot()
-            run_flask_app()
+            
+            flask_server_thread = threading.Thread(target=flask_thread)
+            flask_server_thread.start()
+
         elif is_connected():
             terminate_hotspot()
             stop_flask_app()
             update_recent_networks()
         time.sleep(30)
+
         
 if __name__ == '__main__':
     import threading
