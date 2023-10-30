@@ -1,13 +1,15 @@
 #!/bin/bash
 
 SERVICE_NAME=wifi_connector #your service name
-SCRIPT_PATH="/home/linaro/Documents/tinkerboard-hotspot/wifi_hotspot.py" #path your files
+SCRIPT_PATH="/home/linaro/Documents/tinkerboard-hotspot/wifi_hotspot.py" #path your script
 
 echo "[Unit]
 Description=WiFi Connector Service
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
+ExecStartPre=/bin/sleep 30
 ExecStart=/usr/bin/python3 $SCRIPT_PATH
 Restart=always
 User=root
