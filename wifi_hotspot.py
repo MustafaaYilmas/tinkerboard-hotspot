@@ -14,10 +14,12 @@ app.secret_key = os.urandom(24)
 
 recent_networks = []
 
+# Function to set IP address for wlan0 interface
 def set_ip_address(action="add"):
     cmd = "add" if action == "add" else "del"
     execute_command(["sudo", "ip", "addr", cmd, "10.0.0.1/24", "dev", "wlan0"])
 
+# Execute shell command and optionally return the output
 def execute_command(command_list, get_output=False):
     try:
         if get_output:
@@ -30,7 +32,7 @@ def execute_command(command_list, get_output=False):
         print(f"Error executing command {' '.join(command_list)}: {str(e)}")
         return False
 
-
+# Check if there's an active network connection
 def is_connected():
     try:
         output = execute_command(["sudo", "nmcli", "-t", "con", "show", "--active"], True)
@@ -40,7 +42,7 @@ def is_connected():
         print(f"Error checking connection status: {str(e)}")
         return False
 
-
+# Check if the hotspot is currently active
 def is_hotspot_active():
     try:
         result = execute_command(["sudo", "systemctl", "is-active", "hostapd"], True) == "active"
@@ -50,7 +52,7 @@ def is_hotspot_active():
         print(f"Error checking hotspot status: {str(e)}")
         return False
 
-
+# Control the NetworkManager service based on the given action (e.g., start, stop, restart)
 def control_network_manager(action="restart"):
     try:
         execute_command(["sudo", "systemctl", action, "NetworkManager"])
@@ -59,7 +61,7 @@ def control_network_manager(action="restart"):
     except Exception as e:
         print(f"Error controlling NetworkManager: {str(e)}")
 
-
+# Start the hotspot by configuring the necessary services
 def initiate_hotspot():
     try:
         control_network_manager("stop")
@@ -68,7 +70,7 @@ def initiate_hotspot():
     except Exception as e:
         print(f"Error initiating hotspot: {str(e)}")
 
-
+# Terminate the hotspot and return to the standard network connection
 def terminate_hotspot():
     try:
         execute_command(["sudo", "systemctl", "stop", "hostapd"])
@@ -79,7 +81,7 @@ def terminate_hotspot():
     except Exception as e:
         print(f"Error terminating hotspot: {str(e)}")
 
-
+# Check if the network connection remains stable for a defined period
 def is_connection_stable():
     try:
         start_time = time.time()
@@ -92,7 +94,7 @@ def is_connection_stable():
         print(f"Error checking connection stability: {str(e)}")
         return False
 
-
+# Update the list of recent networks
 def update_recent_networks():
     global recent_networks
     try:
@@ -107,13 +109,13 @@ def update_recent_networks():
     except Exception as e:
         print(f"Error updating recent networks: {str(e)}")
 
-
+# Endpoint to display available networks
 @app.route('/')
 def index():
     update_recent_networks()
     return render_template("wifi_list.html", networks=recent_networks)
 
-
+# Endpoint to connect to a specific network
 @app.route('/connect', methods=['POST'])
 def connect():
     try:
@@ -136,41 +138,41 @@ def connect():
         flash(f"Unexpected error: {str(e)}", 'danger')
         return redirect('/')
 
+# Initialize the first network connection or switch to hotspot if unable to connect
 def first_init_connection():
     try:
         update_recent_networks()
         if not is_connected():
-            print("ilk bağlantı bulunamadı.")
             
             control_network_manager("stop")
-            print("Network stop ediliyor...")
+
             
             set_ip_address("add")
-            print("IP adresi eklendi.")
+
             
             execute_command(["sudo", "systemctl", "restart", "hostapd"])
-            print("hostapd yeniden başlatıldı.")
+
             
             if is_connected():
-                print("Bağlantı kuruldu.")
+
                 execute_command(["sudo", "systemctl", "stop", "hostapd"])
                 if is_connection_stable():
                         execute_command(["sudo", "systemctl", "restart", "aged-ai.service"])
             else:
-                print("İlk bağlantı kurulamadı. Normal servise geçiyor...")
+
                 execute_command(["sudo", "systemctl", "stop", "hostapd"])
         else:
-            print("Bağlantı var.")
             update_recent_networks()
             execute_command(["sudo", "systemctl", "stop", "hostapd"])
             execute_command(["sudo", "systemctl", "restart", "NetworkManager"])
             time.sleep(5)
+            execute_command(["sudo", "systemctl", "restart", "aged-ai.service"])
     except Exception as e:
         print(f"Bir hata oluştu: {e}")
 
 
     
-
+# Continuously check and maintain network connection; switch between regular network and hotspot as needed
 def check_and_maintain_connection():
 
     global server_thread_started 
@@ -188,23 +190,24 @@ def check_and_maintain_connection():
     while True:
         try:
             currently_connected = is_connected()
-            print("baglanti durumu " , currently_connected)
+            print("baglanti durumu ", currently_connected)
             update_recent_networks()
+
+            # Eğer şu anda bağlıysak
+            if currently_connected:
+                # Hotspot kontrolü
+                if is_hotspot_active():
+                    print("Cihaz bağlıyken hotspot aktif! Hotspot kapatılıyor...")
+                    # IP adresini değiştirmeden sadece hotspot'u kapatma işlemi gerçekleştir
+                    execute_command(["sudo", "systemctl", "stop", "hostapd"])
+
             # Eğer şu anda bağlı değilse
-            if not currently_connected:
+            else:
                 if not is_hotspot_active():
                     update_recent_networks()
                     print("hotspot aktif degilse")
                     initiate_hotspot()
                     print("hotspot acildi")
-                    
-
-            # Eğer şu anda bağlıysa ve önceden bağlı değilse (yani yeni bir bağlantı sağlandıysa) duzenlenmesi lazim saglikli degil
-            #else:
-                #if not previously_connected:
-                    #if is_connection_stable():
-                        #execute_command(["sudo", "systemctl", "restart", "aged-ai.service"])
-                    #terminate_hotspot()
 
             previously_connected = currently_connected
             time.sleep(30)
