@@ -28,7 +28,7 @@ rsn_pairwise=CCMP
 EOL
 
 # 3. hostapd stop
-systemctl stop hostapd
+sudo systemctl stop hostapd
 
 # 4. ufw setup check
 if ! command -v ufw &> /dev/null; then
@@ -54,7 +54,8 @@ echo "dhcp-range=10.0.0.2,10.0.0.16,255.255.255.0,24h" >> $DNSMASQ_CONF
 echo "port=5353" >> $DNSMASQ_CONF
 
 #9. daemon -reload
-systemctl daemon-reload
+sudo systemctl daemon-reload
 
+pip3 install --user flask
 # 10. dnsmasq reboot
-systemctl restart dnsmasq
+sudo systemctl restart dnsmasq

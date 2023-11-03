@@ -1,0 +1,23 @@
+update recent networks
+check and maintain connection while true
+is connected
+Vodafonenet_Wifi_8047 15:c3bb3cb7-3b96-414b-89cc-9d78a8aac515:802-11-wireless:wlan0
+currently connected and previously connected
+is hotspot active
+terminate hotspot
+control network manager
+set ip address
+RTNETLINK answers: Cannot assign requested address
+
+ikinci
+
+
+update recent networks
+check and maintain connection while true
+is connected
+Vodafonenet_Wifi_8047 15:c3bb3cb7-3b96-414b-89cc-9d78a8aac515:802-11-wireless:wlan0
+currently connected and previously connected
+is hotspot active
+check and maintain connection while true
+is connected
+Vodafonenet_Wifi_8047 15:c3bb3cb7-3b96-414b-89cc-9d78a8aac515:802-11-wireless:wlan0
